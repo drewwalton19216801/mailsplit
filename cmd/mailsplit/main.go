@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/drewwalton19216801/mailsplit"
+	"github.com/drewwalton19216801/mailsplit/mailsplit"
 )
 
 // mailsplit is a command line tool that processes an email and saves attachments to disk

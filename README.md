@@ -37,7 +37,7 @@ import (
     "io"
     "log"
     "os"
-    "github.com/drewwalton19216801/mailsplit"
+    "github.com/drewwalton19216801/mailsplit/mailsplit"
 )
 
 func main() {
