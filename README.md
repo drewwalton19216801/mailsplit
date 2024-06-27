@@ -25,6 +25,28 @@ To use the MailSplit library, you need to have [Go](https://golang.org/) install
     go get github.com/drewwalton19216801/mailsplit
     ```
 
+## Using the MailSplit binary
+
+To use the MailSplit binary, you need to have [Go](https://golang.org/) installed on your machine.
+
+1. Install the Go binary:
+
+    ```sh
+    go install github.com/drewwalton19216801/mailsplit/cmd/mailsplit@latest
+    ```
+
+2. Ensure the binary is in your PATH:
+
+    ```sh
+    export PATH=$PATH:$HOME/go/bin
+    ```
+
+3. Run the MailSplit binary:
+
+    ```sh
+    mailsplit /path/to/email.eml
+    ```
+
 ## Usage
 
 To use the MailSplit library, you can create a simple Go program. Here is an example:
