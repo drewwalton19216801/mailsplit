@@ -13,6 +13,11 @@ import (
 // Usage: mailsplit <path_to_email_file>
 
 func main() {
+	// Ensure the correct number of arguments are provided
+	if len(os.Args) != 2 {
+		log.Fatal("Usage: mailsplit <path_to_email_file>")
+	}
+
 	// Read email from a file
 	file, err := os.Open(os.Args[1])
 	if err != nil {
