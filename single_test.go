@@ -36,8 +36,6 @@ VGhpcyBpcyBhIHNpbmdsZSBhdHRhY2htZW50Cg==
 		t.Fatalf("Failed to process email: %v", err)
 	}
 
-	t.Logf("\nModified email content: \n%s", modifiedEmailContent)
-
 	// Check that the attachment was saved to the output directory
 	expectedAttachmentPath := outputDir + "/test.txt"
 	if _, err := os.Stat(expectedAttachmentPath); os.IsNotExist(err) {
