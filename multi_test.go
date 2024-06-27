@@ -19,24 +19,24 @@ Content-Type: text/plain
 This is the body of the email.
 
 --boundary
-Content-Disposition: attachment; filename="test1.txt"
+Content-Disposition: attachment; filename="file1.txt"
 Content-Transfer-Encoding: base64
 
-VGhpcyBpcyBhIHNpbmdsZSBhdHRhY2htZW50Cg==
+VGhpcyBpcyBhIHRleHQgYXR0YWNobWVudAo=
 
 --boundary
-Content-Disposition: attachment; filename="test2.pdf"
+Content-Disposition: attachment; filename="file2.jpg"
 Content-Transfer-Encoding: base64
 
-JVBERi0xLjUNCiW1tbW1DQoxIDAgb2JqDQo8PCAvVHlwZSAvUGFnZQ0KL0tpZHMgWzQgMCBSXS9J
-RCBvYmoNCjw8IC9UeXBlIC9QYWdlcw0KL01lZGlhQm94IFswIDAgNTk1LjIyOSA3MTIuOTddDQov
-TWVkaWFCb3ggWzAgMCA1OTUuMjI5IDcxMi45N10NCi9Db250ZW50cyA1IDAgUg0KL1Jlc291cmNl
-cyA8PA0KL0ZpbHRlciAvRmxhdGVEZWNvZGUNCj4NCnN0cmVhbQ0KPDwvU2l6ZSAyL0ZpbHRlciAv
-RmxhdGVEZWNvZGUNCi9MZW5ndGggNDYNCi9Gb250IDw8IC9GMSAxMiAvRjIgMiBGMiA3IDAgUiA+
-Pj4NCnN0YXJ0eHJlZg0KMjcyNA0KJSVFT0YNCg==
+VGhpcyBpcyBhIGppcGVnIGF0dGFjaG1lbnQKCg==
 
---boundary--
-`
+--boundary
+Content-Disposition: attachment; filename="file3.pdf"
+Content-Transfer-Encoding: base64
+
+VGhpcyBpcyBhIHBkZiBhdHRhY2htZW50Cg==
+
+--boundary--`
 
 	outputDir, err := os.MkdirTemp("", "mailsplit")
 	if err != nil {
@@ -51,8 +51,9 @@ Pj4NCnN0YXJ0eHJlZg0KMjcyNA0KJSVFT0YNCg==
 
 	// Check that the attachments were saved to the output directory
 	expectedAttachments := []string{
-		outputDir + "/test1.txt",
-		outputDir + "/test2.pdf",
+		outputDir + "/file1.txt",
+		outputDir + "/file2.jpg",
+		outputDir + "/file3.pdf",
 	}
 
 	for _, expectedAttachment := range expectedAttachments {
@@ -62,7 +63,7 @@ Pj4NCnN0YXJ0eHJlZg0KMjcyNA0KJSVFT0YNCg==
 	}
 
 	// Check that the modified email content does not contain the attachment parts
-	attachments := []string{"test1.txt", "test2.pdf"}
+	attachments := []string{"file1.txt", "file2.jpg", "file3.pdf"}
 	for _, attachment := range attachments {
 		if strings.Contains(modifiedEmailContent, fmt.Sprintf("Content-Disposition: attachment; filename=\"%s\"", attachment)) {
 			t.Fatalf("Attachment %s was not removed from the email content", attachment)

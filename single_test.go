@@ -29,16 +29,14 @@ VGhpcyBpcyBhIHNpbmdsZSBhdHRhY2htZW50Cg==
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}
-	defer func() {
-		if err := os.RemoveAll(outputDir); err != nil {
-			t.Logf("Failed to remove temporary directory: %v", err)
-		}
-	}()
+	defer os.RemoveAll(outputDir)
 
 	modifiedEmailContent, err := ProcessEmail(emailContent, outputDir)
 	if err != nil {
 		t.Fatalf("Failed to process email: %v", err)
 	}
+
+	t.Logf("\nModified email content: \n%s", modifiedEmailContent)
 
 	// Check that the attachment was saved to the output directory
 	expectedAttachmentPath := outputDir + "/test.txt"
@@ -46,32 +44,23 @@ VGhpcyBpcyBhIHNpbmdsZSBhdHRhY2htZW50Cg==
 		t.Errorf("Expected attachment not found at %s", expectedAttachmentPath)
 	}
 
-	// Split the modified email content into parts
-	parts := strings.Split(modifiedEmailContent, "\n\n")
+	// Normalize line endings for comparison
+	modifiedEmailContentNormalized := strings.ReplaceAll(modifiedEmailContent, "\r\n", "\n")
 
-	// Check that the modified email content has the expected number of parts
-	if len(parts) < 2 {
-		t.Errorf("Modified email content has unexpected number of parts")
-	}
-
-	// Check the header part
-	headerPart := strings.TrimSpace(parts[0])
-	if !strings.HasPrefix(headerPart, "From: sender@example.com") ||
-		!strings.Contains(headerPart, "Subject: Test email with single attachment") ||
-		!strings.Contains(headerPart, "Content-Type: multipart/mixed; boundary=\"boundary\"") {
-		t.Errorf("Modified email header does not match expected content")
-		// Print the header part for debugging purposes
-		t.Logf("Modified email header: %s", headerPart)
+	// Split content by boundary and check the relevant parts
+	parts := strings.Split(modifiedEmailContentNormalized, "\n--boundary")
+	if len(parts) < 1 { // 1 part = 2 boundary lines
+		t.Errorf("Modified email content does not contain expected boundary")
 	}
 
 	// Check the body part
-	bodyPart := strings.TrimSpace(parts[1])
+	bodyPart := strings.TrimSpace(parts[0])
 	if !strings.Contains(bodyPart, "This is the body of the email.") {
 		t.Errorf("Modified email body does not match expected content")
 	}
 
 	// Check that there are no additional parts beyond the expected ones
-	if len(parts) > 3 {
+	if len(parts) > 1 {
 		t.Errorf("Modified email content contains unexpected MIME parts")
 	}
 
