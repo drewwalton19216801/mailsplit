@@ -105,11 +105,21 @@ func removeAttachments(emailContent string) (string, error) {
 	}
 
 	var newEmailContent bytes.Buffer
-	newEmailContent.WriteString(fmt.Sprintf("%s\n\n", msg.Header))
+	// Iterate through all headers and reconstruct them
+	for key, values := range msg.Header {
+		for _, value := range values {
+			newEmailContent.WriteString(fmt.Sprintf("%s: %s\n", key, value))
+		}
+	}
 
-	mr := multipart.NewReader(msg.Body, params["boundary"])
+	// Add an extra newline after headers
+	newEmailContent.WriteString("\n")
+
+	// Create a new multipart writer for the reconstructed content
 	mw := multipart.NewWriter(&newEmailContent)
 	defer mw.Close()
+
+	mr := multipart.NewReader(msg.Body, params["boundary"])
 
 	for {
 		p, err := mr.NextPart()
@@ -138,6 +148,16 @@ func removeAttachments(emailContent string) (string, error) {
 		}
 
 		if !strings.HasPrefix(mediaType, "attachment") {
+			pw, err := mw.CreatePart(p.Header)
+			if err != nil {
+				return "", fmt.Errorf("failed to create part: %v", err)
+			}
+			if _, err := io.Copy(pw, p); err != nil {
+				return "", fmt.Errorf("failed to copy part: %v", err)
+			}
+		}
+
+		if strings.HasPrefix(mediaType, "attachment") {
 			continue
 		}
 
