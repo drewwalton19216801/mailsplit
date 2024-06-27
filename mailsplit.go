@@ -105,11 +105,28 @@ func removeAttachments(emailContent string) (string, error) {
 	}
 
 	var newEmailContent bytes.Buffer
-	newEmailContent.WriteString(fmt.Sprintf("%s\n\n", msg.Header))
+	// Reconstruct the headers without attachments
+	newEmailContent.WriteString(fmt.Sprintf("From: %s\n", msg.Header.Get("From")))
+	newEmailContent.WriteString(fmt.Sprintf("To: %s\n", msg.Header.Get("To")))
+	newEmailContent.WriteString(fmt.Sprintf("Subject: %s\n", msg.Header.Get("Subject")))
+	newEmailContent.WriteString(fmt.Sprintf("Content-Type: %s\n", msg.Header.Get("Content-Type")))
+	newEmailContent.WriteString(fmt.Sprintf("MIME-Version: %s\n", msg.Header.Get("MIME-Version")))
 
-	mr := multipart.NewReader(msg.Body, params["boundary"])
+	// Write the boundary for the multipart content
+	newEmailContent.WriteString(fmt.Sprintf("Content-Type: %s; boundary=\"%s\"\n\n", mediaType, params["boundary"]))
+
+	// Write any other headers that were in the original email
+	for k, v := range msg.Header {
+		if k != "From" && k != "To" && k != "Subject" && k != "Content-Type" && k != "MIME-Version" {
+			newEmailContent.WriteString(fmt.Sprintf("%s: %s\n", k, v[0]))
+		}
+	}
+
+	// Create a new multipart writer for the reconstructed content
 	mw := multipart.NewWriter(&newEmailContent)
 	defer mw.Close()
+
+	mr := multipart.NewReader(msg.Body, params["boundary"])
 
 	for {
 		p, err := mr.NextPart()
@@ -138,6 +155,16 @@ func removeAttachments(emailContent string) (string, error) {
 		}
 
 		if !strings.HasPrefix(mediaType, "attachment") {
+			pw, err := mw.CreatePart(p.Header)
+			if err != nil {
+				return "", fmt.Errorf("failed to create part: %v", err)
+			}
+			if _, err := io.Copy(pw, p); err != nil {
+				return "", fmt.Errorf("failed to copy part: %v", err)
+			}
+		}
+
+		if strings.HasPrefix(mediaType, "attachment") {
 			continue
 		}
 
